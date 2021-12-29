@@ -15,18 +15,19 @@ from newsapi import NewsApiClient
 
 
 def command():
-    # saying = input()
     r = sr.Recognizer()
-    saying = ""
-    with sr.Microphone(device_index=1) as source:
-        print("Listening...")
-        r.pause_threshold = 1
-        try:
-            saying = r.recognize_google(r.listen(source), language="en-IN")
-        except Exception as e:
-            print(e)
-            output("Say that again please...")
+    with sr.Microphone() as source:
+        print("Listening>>>>")
+        audio = r.listen(source, phrase_time_limit=3)
+    try:
+        saying = r.recognize_google(audio).lower()
+        print("you said: " + saying)
+
+    except sr.UnknownValueError:
+        output("Sorry, Cant understand, Please say again")
+        saying = command()
     return saying
+
 
 
 def output(out):
@@ -77,9 +78,8 @@ def sendWhatMsg():
 # you can get your weather api key from https://openweathermap.org/api
 def weather():
     city = "Islamabad"
-    api_key = "<your api key from https://openweathermap.org/api>"
     res = requests.get(
-        f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
+        f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid=6ea0f4fa2ccf0a4d085055ca945cd54e"
     ).json()
     temp = res["weather"][0]["description"]
     temp2 = res["main"]["temp"]
@@ -90,9 +90,7 @@ def weather():
 
 def news():
     # https://newsapi.org/account
-    newsapi = NewsApiClient(
-        api_key="<Your api key from # https://newsapi.org/account >"
-    )
+    newsapi = NewsApiClient(api_key="0292decefe8c46269ee1b1eb5e2bb56c")
     output("What topic you need the news about")
     topic = command().lower()
     data = newsapi.get_top_headlines(q=topic, language="en", page_size=5)
@@ -137,13 +135,13 @@ while True:
     elif "news" in saying:
         news()
 
-    elif "covid" in saying:
+    elif "cases" in saying:
         r = requests.get("https://coronavirus-19-api.herokuapp.com/all").json()
         output(
             f'Confirmed cases: {r["cases"]} \nDeaths: {r["deaths"]} \nRecovered {r["recovered"]}'
         )
     elif "developed" in saying:
-        output("Huzaifa and huma made this incredible program")
+        output("Huzaifa and Humma made this incredible program")
 
     elif "joke" in saying:
         output(pyjokes.get_joke())
@@ -163,3 +161,4 @@ while True:
         else:
             output(f"By {user}! You can call me back whenever you need!")
         quit()
+
